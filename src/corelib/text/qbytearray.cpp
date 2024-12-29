@@ -4475,6 +4475,11 @@ QByteArray QByteArray::number(double n, char f, int prec)
     destructor will never delete the raw \a data, even when the
     last QByteArray referring to \a data is destroyed.
 
+    fromRawData(const char *data, int size)函数使用数组date的前size个字节作为初始值构造QByteArray对象.
+    注意：QByteArray对象不会复制字节数组，而是直接使用指针data.
+    调用者需保证data指针在QByteArray对象存在的生命周期内不会被释放或修改.
+    若QByteArray对象的生命周期结束，QByteArray析构函数不会释放原始数据.
+
     A subsequent attempt to modify the contents of the returned
     QByteArray or any copy made from it will cause it to create a deep
     copy of the \a data array before doing the modification. This

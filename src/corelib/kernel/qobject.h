@@ -96,27 +96,29 @@ Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QRegular
                                            const QMetaObject &mo, QList<void *> *list, Qt::FindChildOptions options);
 Q_CORE_EXPORT QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const QMetaObject &mo, Qt::FindChildOptions options);
 
+/* QObjectData用于存储QObject的内部数据 */
 class Q_CORE_EXPORT QObjectData {
+    /* 禁用拷贝构造函数和拷贝赋值运算符 */
     Q_DISABLE_COPY(QObjectData)
 public:
     QObjectData() = default;
     virtual ~QObjectData() = 0;
-    QObject *q_ptr;
-    QObject *parent;
-    QObjectList children;
+    QObject *q_ptr; // 指向QObject的指针，用于访问QObject的私有成员
+    QObject *parent;    // 指向QObject的父对象的指针，用于表示当前对象是父对象的子对象
+    QObjectList children;   // QObjectList类型，用于存储当前对象的子对象列表。
 
-    uint isWidget : 1;
-    uint blockSig : 1;
-    uint wasDeleted : 1;
-    uint isDeletingChildren : 1;
-    uint sendChildEvents : 1;
-    uint receiveChildEvents : 1;
-    uint isWindow : 1; //for QWindow
-    uint deleteLaterCalled : 1;
-    uint unused : 24;
-    int postedEvents;
-    QDynamicMetaObjectData *metaObject;
-    QMetaObject *dynamicMetaObject() const;
+    uint isWidget : 1;  // 布尔变量，用于表示当前对象是否是一个QWidget对象
+    uint blockSig : 1;  // 布尔变量，用于表示当前对象是否处于信号阻塞状态
+    uint wasDeleted : 1;    // 布尔变量，用于表示当前对象是否已经被删除
+    uint isDeletingChildren : 1;    // 布尔变量，用于表示当前对象是否正在删除其子对象
+    uint sendChildEvents : 1;   // 布尔变量，用于表示当前对象是否需要发送子对象事件
+    uint receiveChildEvents : 1;    // 布尔变量，用于表示当前对象是否需要接收子对象事件
+    uint isWindow : 1;  // 布尔变量，用于表示当前对象是否是一个窗口对象
+    uint deleteLaterCalled : 1; // 布尔变量，用于表示当前对象是否已经调用过deleteLater()方法
+    uint unused : 24;   // 无符号整型变量，用于存储未使用的位
+    int postedEvents;   // 整型变量，用于存储当前对象已发送的事件数
+    QDynamicMetaObjectData *metaObject; // 指向QDynamicMetaObjectData的指针，用于存储当前对象的元对象信息
+    QMetaObject *dynamicMetaObject() const; // 用于获取当前对象的动态元对象信息
 
 #ifdef QT_DEBUG
     enum { CheckForParentChildLoopsWarnDepth = 4096 };
@@ -124,6 +126,7 @@ public:
 };
 
 
+/* QObjetc */
 class Q_CORE_EXPORT QObject
 {
     Q_OBJECT
@@ -132,10 +135,14 @@ class Q_CORE_EXPORT QObject
     Q_DECLARE_PRIVATE(QObject)
 
 public:
+    /* 构造函数 */
     Q_INVOKABLE explicit QObject(QObject *parent=nullptr);
+    /* 析构函数 */
     virtual ~QObject();
 
+    /* 事件处理 */
     virtual bool event(QEvent *event);
+    /* 事件过滤 */
     virtual bool eventFilter(QObject *watched, QEvent *event);
 
 #if defined(QT_NO_TRANSLATION) || defined(Q_CLANG_QDOC)
@@ -147,18 +154,27 @@ public:
 #endif
 #endif //QT_NO_TRANSLATION
 
+    /* 获取对象名称 */
     QString objectName() const;
+    /* 设置对象名称 */
     void setObjectName(const QString &name);
 
+    /* 判断对象是否为Widget对象 */
     inline bool isWidgetType() const { return d_ptr->isWidget; }
+    /* 判断对象是否为Window对象 */
     inline bool isWindowType() const { return d_ptr->isWindow; }
 
+    /* 判断信号是否被阻塞 */
     inline bool signalsBlocked() const noexcept { return d_ptr->blockSig; }
+    /* 阻塞或解除阻塞信号 */
     bool blockSignals(bool b) noexcept;
 
+    /* 获取对象所在的线程 */
     QThread *thread() const;
+    /* 将对象移动到指定线程 */
     void moveToThread(QThread *thread);
 
+    /* 启动定时器 */
     int startTimer(int interval, Qt::TimerType timerType = Qt::CoarseTimer);
 #if __has_include(<chrono>)
     Q_ALWAYS_INLINE
@@ -167,8 +183,11 @@ public:
         return startTimer(int(time.count()), timerType);
     }
 #endif
+
+    /* 停止定时器 */
     void killTimer(int id);
 
+    /* 查找子对象 */
     template<typename T>
     inline T findChild(const QString &aName = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
@@ -176,6 +195,7 @@ public:
         return static_cast<T>(qt_qFindChild_helper(this, aName, ObjType::staticMetaObject, options));
     }
 
+    /* 查找子对象列表 */
     template<typename T>
     inline QList<T> findChildren(const QString &aName = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
@@ -213,12 +233,17 @@ public:
     }
 #endif // QT_CONFIG(regularexpression)
 
+    /* 获取子对象列表 */
     inline const QObjectList &children() const { return d_ptr->children; }
 
+    /* 设置父对象 */
     void setParent(QObject *parent);
+    /* 安装事件过滤器 */
     void installEventFilter(QObject *filterObj);
+    /* 移除事件过滤器 */
     void removeEventFilter(QObject *obj);
 
+    /* 连接信号与槽 */
     static QMetaObject::Connection connect(const QObject *sender, const char *signal,
                         const QObject *receiver, const char *member, Qt::ConnectionType = Qt::AutoConnection);
 
@@ -238,6 +263,7 @@ public:
     static QMetaObject::Connection connect(const QObject *sender, PointerToMemberFunction signal, const QObject *context, Functor functor, Qt::ConnectionType type = Qt::AutoConnection);
 #else
     //Connect a signal to a pointer to qobject member function
+    /* 连接信号和QObject对象成员函数 */
     template <typename Func1, typename Func2>
     static inline QMetaObject::Connection connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal,
                                      const typename QtPrivate::FunctionPointer<Func2>::Object *receiver, Func2 slot,
@@ -348,6 +374,7 @@ public:
     }
 #endif //Q_CLANG_QDOC
 
+    /* 断开信号与槽的连接 */
     static bool disconnect(const QObject *sender, const char *signal,
                            const QObject *receiver, const char *member);
     static bool disconnect(const QObject *sender, const QMetaMethod &signal,
@@ -403,7 +430,9 @@ public:
     void dumpObjectInfo() const;
 
 #ifndef QT_NO_PROPERTIES
+    /* 设置对象属性 */
     bool setProperty(const char *name, const QVariant &value);
+    /* 获取对象属性 */
     QVariant property(const char *name) const;
     QList<QByteArray> dynamicPropertyNames() const;
 #endif // QT_NO_PROPERTIES
@@ -418,37 +447,54 @@ public:
 #endif // QT_NO_USERDATA
 
 Q_SIGNALS:
+    /* destroyed信号，在对象被销毁时发出 */
     void destroyed(QObject * = nullptr);
+    /* objectNameChanged信号，在对象名称改变时发出 */
     void objectNameChanged(const QString &objectName, QPrivateSignal);
 
 public:
+    /* 获取对象的父对象 */
     inline QObject *parent() const { return d_ptr->parent; }
 
+    /* 检查对象是否继承自指定类 */
     inline bool inherits(const char *classname) const
         { return const_cast<QObject *>(this)->qt_metacast(classname) != nullptr; }
 
 public Q_SLOTS:
+    /* 稍后删除对象 */
     void deleteLater();
 
 protected:
+    /* 获取发送信号的对象 */
     QObject *sender() const;
+    /* 获取发送信号的信号索引 */
     int senderSignalIndex() const;
+    /* 获取连接到指定信号的槽的数量 */
     int receivers(const char* signal) const;
+    /* 检查指定信号是否已连接 */
     bool isSignalConnected(const QMetaMethod &signal) const;
 
+    /* 处理定时器事件 */
     virtual void timerEvent(QTimerEvent *event);
+    /* 处理子对象事件 */
     virtual void childEvent(QChildEvent *event);
+    /* 处理自定义事件 */
     virtual void customEvent(QEvent *event);
 
+    /* 处理连接信号*/
     virtual void connectNotify(const QMetaMethod &signal);
+    /* 断开连接信号*/
     virtual void disconnectNotify(const QMetaMethod &signal);
 
 protected:
+    /* 构造函数 */
     QObject(QObjectPrivate &dd, QObject *parent = nullptr);
 
 protected:
+    /* 私有数据*/
     QScopedPointer<QObjectData> d_ptr;
 
+    /* 静态成员变量，存储Qt元对象 */
     static const QMetaObject staticQtMetaObject;
     friend inline const QMetaObject *qt_getQtMetaObject() noexcept;
 
@@ -464,15 +510,18 @@ protected:
     friend class QThreadData;
 
 private:
+    /* 禁止拷贝构造函数和拷贝赋值运算符 */
     Q_DISABLE_COPY(QObject)
     Q_PRIVATE_SLOT(d_func(), void _q_reregisterTimers(void *))
 
 private:
+    /* 实现信号与槽的连接 */
     static QMetaObject::Connection connectImpl(const QObject *sender, void **signal,
                                                const QObject *receiver, void **slotPtr,
                                                QtPrivate::QSlotObjectBase *slot, Qt::ConnectionType type,
                                                const int *types, const QMetaObject *senderMetaObject);
 
+    /* 实现信号与槽的断开连接 */
     static bool disconnectImpl(const QObject *sender, void **signal, const QObject *receiver, void **slot,
                                const QMetaObject *senderMetaObject);
 

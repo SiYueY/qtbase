@@ -171,13 +171,18 @@ class QString;
 public: \
     QT_WARNING_PUSH \
     Q_OBJECT_NO_OVERRIDE_WARNING \
+    /* 静态成员变量，用于存储QObject类的元对象 */ \
     static const QMetaObject staticMetaObject; \
+    /* 虚函数，用于获取QObjec类的元对象 */ \
     virtual const QMetaObject *metaObject() const; \
+    /* 虚函数，用于将对象指针转换为指定类型的指针 */ \
     virtual void *qt_metacast(const char *); \
+    /* 虚函数，用于处理元对象系统的调用 */
     virtual int qt_metacall(QMetaObject::Call, int, void **); \
     QT_TR_FUNCTIONS \
 private: \
     Q_OBJECT_NO_ATTRIBUTES_WARNING \
+    /* 静态成员函数，用于处理元对象系统的调用 */ \
     Q_DECL_HIDDEN_STATIC_METACALL static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **); \
     QT_WARNING_POP \
     struct QPrivateSignal {}; \
@@ -334,9 +339,11 @@ public:
         {}
 };
 
+/* QMetaObject元对象 */
 struct Q_CORE_EXPORT QMetaObject
 {
     class Connection;
+    /* */
     const char *className() const;
     const QMetaObject *superClass() const;
 
@@ -616,17 +623,24 @@ private:
     friend class QTimer;
 };
 
+/* Connection */
 class Q_CORE_EXPORT QMetaObject::Connection {
+    /* D指针 */
     void *d_ptr; //QObjectPrivate::Connection*
+    /* 构造函数*/
     explicit Connection(void *data) : d_ptr(data) {  }
     friend class QObject;
     friend class QObjectPrivate;
     friend struct QMetaObject;
     bool isConnected_helper() const;
 public:
+    /* 析构函数 */
     ~Connection();
+    /* 构造函数 */
     Connection();
+    /* 构造函数 */
     Connection(const Connection &other);
+    /* 赋值运算符 */
     Connection &operator=(const Connection &other);
 #ifdef Q_QDOC
     operator bool() const;
@@ -635,6 +649,7 @@ public:
     operator RestrictedBool() const { return d_ptr && isConnected_helper() ? &Connection::d_ptr : nullptr; }
 #endif
 
+    /* 构造函数 */
     Connection(Connection &&o) noexcept : d_ptr(o.d_ptr) { o.d_ptr = nullptr; }
     Connection &operator=(Connection &&other) noexcept
     { qSwap(d_ptr, other.d_ptr); return *this; }

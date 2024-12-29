@@ -1384,6 +1384,8 @@ bool QObject::event(QEvent *e)
     functionality, and also more general information about timers. The
     timer event is passed in the \a event parameter.
 
+    timerEvent() 接受QTimerEvent参数，可以被子类重写，用于处理定时器事件。
+
     \sa startTimer(), killTimer(), event()
 */
 
@@ -2433,6 +2435,7 @@ static const char * extract_location(const char *member)
     return nullptr;
 }
 
+/* 检查QObject类中的信号和槽是否使用正确 */
 static bool check_signal_macro(const QObject *sender, const char *signal,
                                 const char *func, const char *op)
 {
@@ -2753,9 +2756,11 @@ static inline void check_and_warn_compat(const QMetaObject *sender, const QMetaM
     the \a sender object to the \a method in the \a receiver object.
     Returns a handle to the connection that can be used to disconnect
     it later.
+    创建从 sender 对象中的 signal 信号到 receiver 对象中的 method 方法的连接.
 
     You must use the \c SIGNAL() and \c SLOT() macros when specifying
     the \a signal and the \a method, for example:
+    必须使用 SIGNAL() 和 SLOT() 宏来指定信号和方法.
 
     \snippet code/src_corelib_kernel_qobject.cpp 22
 
@@ -2776,10 +2781,12 @@ static inline void check_and_warn_compat(const QMetaObject *sender, const QMetaM
 
     A signal can be connected to many slots and signals. Many signals
     can be connected to one slot.
+    一个信号可以连接多个槽函数和一个信号. 多个信号可以连接到同一个槽函数.
 
     If a signal is connected to several slots, the slots are activated
     in the same order in which the connections were made, when the
     signal is emitted.
+    若一个信号被连接到多个槽函数, 当信号被发射时, 槽函数将按照连接的顺序被激活执行.
 
     The function returns a QMetaObject::Connection that represents
     a handle to a connection if it successfully
@@ -4996,13 +5003,14 @@ void qDeleteInEventHandler(QObject *o)
     \internal
 
     Implementation of the template version of connect
+    connect实现
 
-    \a sender is the sender object
-    \a signal is a pointer to a pointer to a member signal of the sender
+    \a sender is the sender object  信号发送者
+    \a signal is a pointer to a pointer to a member signal of the sender    信号
     \a receiver is the receiver object, may not be \nullptr, will be equal to sender when
                 connecting to a static function or a functor
-    \a slot a pointer only used when using Qt::UniqueConnection
-    \a type the Qt::ConnectionType passed as argument to connect
+    \a slot a pointer only used when using Qt::UniqueConnection 槽函数
+    \a type the Qt::ConnectionType passed as argument to connect    连接类型
     \a types an array of integer with the metatype id of the parameter of the signal
              to be used with queued connection
              must stay valid at least for the whole time of the connection, this function

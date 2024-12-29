@@ -152,6 +152,7 @@ struct QByteArrayDataPtr
     }()) \
     /**/
 
+/* QByteArray */
 class Q_CORE_EXPORT QByteArray
 {
 private:
@@ -467,6 +468,7 @@ public:
 
 private:
     operator QNoImplicitBoolCast() const;
+    /* 指向 QTypedArrayData<char>类型的指针，用于存储实际数据 */
     Data *d;
     void reallocData(uint alloc, Data::AllocationOptions options);
     void expand(int i);

@@ -167,6 +167,7 @@ private:
 };
 Q_DECLARE_TYPEINFO(QArgumentType, Q_MOVABLE_TYPE);
 
+/* 参数类型数组 */
 typedef QVarLengthArray<QArgumentType, 10> QArgumentTypeArray;
 
 class QMetaMethodPrivate;

@@ -145,36 +145,60 @@ public:
         }
     };
 
+    /* Connection */
     struct Connection : public ConnectionOrSignalVector
     {
         // linked list of connections connected to slots in this object, next is in base class
         Connection **prev;
         // linked list of connections connected to signals in this object
+        /* 指向与该对象中信号连接的Connection列表 */
         QAtomicPointer<Connection> nextConnectionList;
         Connection *prevConnectionList;
 
+        /* 信号发送者 */
         QObject *sender;
+        /* 信号接收者 */
         QAtomicPointer<QObject> receiver;
+        /* 信号接收者的线程数据 */
         QAtomicPointer<QThreadData> receiverThreadData;
         union {
-            StaticMetaCallFunction callFunction;
-            QtPrivate::QSlotObjectBase *slotObj;
+            StaticMetaCallFunction callFunction;    /* 回调函数 */
+            QtPrivate::QSlotObjectBase *slotObj;    /* 指向槽函数对象的指针 */
         };
+        /* 存储信号参数类型的指针 */
         QAtomicPointer<const int> argumentTypes;
+        /* 引用计数，管理Connection的生命周期 */
         QAtomicInt ref_;
+        /* 索引 */
         uint id = 0;
+        /* 方法偏移量 */
         ushort method_offset;
+        /* 方法相对偏移量 */
         ushort method_relative;
+        /* 信号索引 */
         signed int signal_index : 27; // In signal range (see QObjectPrivate::signalIndex())
+        /* 连接类型 */
         ushort connectionType : 3; // 0 == auto, 1 == direct, 2 == queued, 4 == blocking
+        /* 是否为槽函数对象 */
         ushort isSlotObject : 1;
+        /* 是否拥有argumentTypes指针 */
         ushort ownArgumentTypes : 1;
+
+        /* 默认构造函数 */
         Connection() : ref_(2), ownArgumentTypes(true) {
             //ref_ is 2 for the use in the internal lists, and for the use in QMetaObject::Connection
         }
+
+        /* 析构函数 */
         ~Connection();
+
+        /* 方法 */
         int method() const { Q_ASSERT(!isSlotObject); return method_offset + method_relative; }
+        
+        /* 引用计数 */
         void ref() { ref_.ref(); }
+
+        /* 释放槽函数对象 */
         void freeSlotObject()
         {
             if (isSlotObject) {
@@ -182,6 +206,8 @@ public:
                 isSlotObject = false;
             }
         }
+
+        /* 引用计数递减 */
         void deref() {
             if (!ref_.deref()) {
                 Q_ASSERT(!receiver.loadRelaxed());
@@ -190,14 +216,18 @@ public:
             }
         }
     };
+
     // ConnectionList is a singly-linked list
+    /* ConnectionList 连接单链表 */
     struct ConnectionList {
         QAtomicPointer<Connection> first;
         QAtomicPointer<Connection> last;
     };
 
+    /* Sender 信号发送者 */
     struct Sender
     {
+        /* 构造函数 */
         Sender(QObject *receiver, QObject *sender, int signal)
             : receiver(receiver), sender(sender), signal(signal)
         {
@@ -207,11 +237,15 @@ public:
                 cd->currentSender = this;
             }
         }
+
+        /* 析构函数 */
         ~Sender()
         {
             if (receiver)
                 receiver->d_func()->connections.loadRelaxed()->currentSender = previous;
         }
+
+        /* 信号接收者已被删除 */
         void receiverDeleted()
         {
             Sender *s = this;
@@ -226,6 +260,7 @@ public:
         int signal;
     };
 
+    /* SignalVector 信号列表 */
     struct SignalVector : public ConnectionOrSignalVector {
         quintptr allocated;
         // ConnectionList signals[]
@@ -237,6 +272,8 @@ public:
         {
             return reinterpret_cast<const ConnectionList *>(this + 1)[i + 1];
         }
+
+        /* 信号数量 */
         int count() const { return static_cast<int>(allocated); }
     };
 

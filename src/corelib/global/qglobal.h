@@ -439,14 +439,18 @@ constexpr Q_DECL_UNUSED Deprecated_t Deprecated = {};
    classes contains a private copy constructor and assignment
    operator to disable copying (the compiler gives an error message).
 */
+/* 禁用拷贝构造函数和拷贝赋值运算符 */
 #define Q_DISABLE_COPY(Class) \
     Class(const Class &) = delete;\
     Class &operator=(const Class &) = delete;
 
+/* 禁用移动构造函数和移动赋值运算符 */
 #define Q_DISABLE_MOVE(Class) \
     Class(Class &&) = delete; \
     Class &operator=(Class &&) = delete;
 
+/* 禁用拷贝构造函数和拷贝赋值运算符.
+ * 禁用移动构造函数和移动赋值运算符. */
 #define Q_DISABLE_COPY_MOVE(Class) \
     Q_DISABLE_COPY(Class) \
     Q_DISABLE_MOVE(Class)

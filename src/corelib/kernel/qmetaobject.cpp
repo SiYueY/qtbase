@@ -674,13 +674,15 @@ int QMetaObject::indexOfMethod(const char *method) const
 
 // Parses a string of comma-separated types into QArgumentTypes.
 // No normalization of the type names is performed.
+/* 解析字符串中的参数类型 ，各参数之间用逗号分隔 .
+ * 不会对类型名称进行规范化处理. */
 static void argumentTypesFromString(const char *str, const char *end,
                                     QArgumentTypeArray &types)
 {
     Q_ASSERT(str <= end);
     while (str != end) {
         if (!types.isEmpty())
-            ++str; // Skip comma
+            ++str; // Skip comma 跳过逗号
         const char *begin = str;
         int level = 0;
         while (str != end && (level > 0 || *str != ',')) {
@@ -696,18 +698,28 @@ static void argumentTypesFromString(const char *str, const char *end,
 
 // Given a method \a signature (e.g. "foo(int,double)"), this function
 // populates the argument \a types array and returns the method name.
+/* 从字符串中解析出函数名称和参数类型 */
 QByteArray QMetaObjectPrivate::decodeMethodSignature(
         const char *signature, QArgumentTypeArray &types)
 {
     Q_ASSERT(signature != nullptr);
+
+    // 查找 '(' 字符在字符串 signature 中首次出现的位置
     const char *lparens = strchr(signature, '(');
     if (!lparens)
         return QByteArray();
+
+    // 查找 ')'  字符在字符串 signature 中最后出现的位置
     const char *rparens = strrchr(lparens + 1, ')');
     if (!rparens || *(rparens+1))
         return QByteArray();
+    
+    // 计算函数名称的长度
     int nameLength = lparens - signature;
+
+    // 解析参数类型
     argumentTypesFromString(lparens + 1, rparens, types);
+
     return QByteArray::fromRawData(signature, nameLength);
 }
 

@@ -1337,10 +1337,10 @@ public:
     Q_DECLARE_OPERATORS_FOR_FLAGS(Edges)
 
     enum ConnectionType {
-        AutoConnection,
-        DirectConnection,
-        QueuedConnection,
-        BlockingQueuedConnection,
+        AutoConnection, // 自动连接
+        DirectConnection,   // 直接连接
+        QueuedConnection,   // 队列连接
+        BlockingQueuedConnection,   // 阻塞队列连接
         UniqueConnection =  0x80
     };
 

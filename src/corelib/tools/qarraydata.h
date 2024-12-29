@@ -45,14 +45,21 @@
 
 QT_BEGIN_NAMESPACE
 
+/* QArrayData */
 struct Q_CORE_EXPORT QArrayData
 {
+    /* 引用计数，用于记录数组被引用的次数 */
     QtPrivate::RefCount ref;
+    /* 数组的元素个数 */
     int size;
+    /* 数组分配的内存大小，以字节为单位 */
     uint alloc : 31;
+    /* 数组是否预留内存空间 */
     uint capacityReserved : 1;
 
-    qptrdiff offset; // in bytes from beginning of header
+    /* 数组的偏移量，以字节为单位，指向数组的第一个元素 */
+    /* 注意：字节对齐 */
+    qptrdiff offset; // in bytes from beginning of header. 
 
     void *data()
     {
@@ -125,6 +132,7 @@ struct Q_CORE_EXPORT QArrayData
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QArrayData::AllocationOptions)
 
+/* QTypedArrayData */
 template <class T>
 struct QTypedArrayData
     : QArrayData
